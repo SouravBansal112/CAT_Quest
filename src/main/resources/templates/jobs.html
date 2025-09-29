@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="icon" th:href="@{/images/catIcon.svg}" type="image/x-icon">
+    <title>Jobs</title>
+</head>
+<body>
+    <header class="navbar">
+        <div class="logo">
+            <img th:src="@{/images/catIcon.svg}" alt="CAT_Quest" width="102" height="102">
+            <p class="site-name">Cat Quest</p>
+        </div>
+        <nav aria-label="primary-navigation" class="nav-links">
+            <p>
+                <a th:href="@{/}">Home</a>
+                <a th:href="@{/jobs}">Jobs</a>
+                <a th:href="@{/tracking}">Tracking</a>
+                <a th:href="@{/calendar}">Calendar</a>
+                <a th:href="@{/profile}">You</a>
+            </p>
+        </nav>
+    </header>
+    <main>
+        <div id="jobs-container" class="jobs-grid">
+            <!-- Job cards will be injected here by JS -->
+        </div>
+
+        <script>
+            async function fetchJobs() {
+                const response = await fetch('/api/jobs');
+                const jobs = await response.json();
+
+                const container = document.getElementById('jobs-container');
+                container.innerHTML = '';
+
+                jobs.forEach(job => {
+                    const card = document.createElement('div');
+                    card.classList.add('job-card');
+
+                    card.innerHTML = `
+            <div class="job-card-header">
+                <h3>${job.title}</h3>
+                <span class="job-company">${job.company.name}</span>
+                <span class="job-location">${job.location.city}, ${job.location.state}, ${job.location.country}</span>
+            </div>
+
+            <div class="job-details">
+                <span class="job-salary">$${job.salary}</span>
+                <span class="job-type">${job.type}</span>
+            </div>
+
+            <div class="job-cta">
+                <button onclick="window.open('${job.jobUrl}', '_blank')">View Job</button>
+            </div>
+        `;
+
+                    container.appendChild(card);
+                });
+            }
+
+            fetchJobs();
+        </script>
+
+    </main>
+</body>
+</html>

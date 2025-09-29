@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="icon" th:href="@{/images/catIcon.svg}" type="image/x-icon">
+    <title>Profile</title>
+</head>
+<body>
+<header class="navbar">
+    <div class="logo">
+        <img th:src="@{/images/catIcon.svg}" alt="CAT_Quest" width="102" height="102">
+        <p class="site-name">Cat Quest</p>
+    </div>
+    <nav aria-label="primary-navigation" class="nav-links">
+        <p>
+            <a th:href="@{/}">Home</a>
+            <a th:href="@{/jobs}">Jobs</a>
+            <a th:href="@{/tracking}">Tracking</a>
+            <a th:href="@{/calendar}">Calendar</a>
+            <a th:href="@{/profile}">You</a>
+        </p>
+    </nav>
+</header>
+
+<article id="review">
+    <form th:action="@{/submit}" method="post">
+        <fieldset>
+            <legend>Review Form</legend>
+            <p>
+                <label for="Name">Name:</label>
+                <input type="text" name="Name" id="Name" placeholder="Enter your name here" autocomplete="on">
+            </p>
+            <p>
+                <label for="password">Password:</label>
+                <input type="password" name="password" id="password" placeholder="Enter your password here" autocomplete="on" required>
+            </p>
+            <p>
+                <label for="rating">Rating:</label>
+                <input type="number" name="rating" id="rating" required min="0" max="5" step="1" value="0">
+            </p>
+            <p>
+                <label for="choose">Choose:</label>
+                <input type="text" name="choose" id="choose" list="optionlist">
+                <datalist id="optionlist">
+                    <option value="DSA">DSA</option>
+                    <option value="MERNstack">MERNstack</option>
+                    <option value="java">Java</option>
+                    <option value="cyberSecurity">Cyber Security</option>
+                    <option value="dataScience">Data Science</option>
+                    <option value="AI">AI</option>
+                </datalist>
+            </p>
+        </fieldset>
+
+        <fieldset>
+            <legend>Which one do you prefer?</legend>
+            <p>
+                <input type="radio" name="method" id="opt1" value="opt1">
+                <label for="opt1">Learning by doing</label>
+            </p>
+            <p>
+                <input type="radio" name="method" id="opt2" value="opt2">
+                <label for="opt2">Deep diving first</label>
+            </p>
+        </fieldset>
+
+        <fieldset>
+            <legend>What do you do with free time?</legend>
+            <p><input type="checkbox" name="hobbies" id="sketching" value="sketching"><label for="sketching">Sketching</label></p>
+            <p><input type="checkbox" name="hobbies" id="gaming" value="gaming"><label for="gaming">Gaming</label></p>
+            <p><input type="checkbox" name="hobbies" id="listeningsongs" value="listeningsongs"><label for="listeningsongs">Listen to songs</label></p>
+            <p><input type="checkbox" name="hobbies" id="novels" value="novels"><label for="novels">Novels</label></p>
+        </fieldset>
+
+        <fieldset>
+            <legend>Leave a review</legend>
+            <p>
+                <label for="message">Review:</label><br>
+                <textarea name="message" id="message" cols="30" rows="10" placeholder="Leave your review here"></textarea>
+            </p>
+        </fieldset>
+
+        <button type="submit">Submit</button>
+        <button type="reset">Reset</button>
+    </form>
+</article>
+</body>
+</html>

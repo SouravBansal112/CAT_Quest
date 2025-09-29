@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="ren">
+    <meta name="description" content="nothing to see here go away and dont linger">
+    <title>CAT Quest</title>
+
+    <link rel="icon" th:href="@{/images/catIcon.svg}" type="image/x-icon">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<header class="navbar">
+    <div class="logo">
+        <img th:src="@{/images/catIcon.svg}" alt="CAT_Quest" width="102" height="102">
+        <p class="site-name">Cat quest</p>
+    </div>
+    <nav aria-label="primary-navigation" class="nav-links">
+        <p>
+            <a th:href="@{/}">Home</a>
+            <a th:href="@{/jobs}">Jobs</a>
+            <a th:href="@{/tracking}">Tracking</a>
+            <a th:href="@{/calendar}">Calendar</a>
+            <a th:href="@{/profile}">You</a>
+        </p>
+    </nav>
+</header>
+<main>
+    <h1>Coming Soon...</h1>
+</main>
+<footer>
+    &lt;&lt;&lt;&copy;<a th:href="@{/}">REN</a>&gt;&gt;&gt;
+    <p><a th:href="@{/}">back to top</a></p>
+</footer>
+</body>
+</html>
