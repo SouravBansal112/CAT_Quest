@@ -1,0 +1,836 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CAT_Quest — Team Knockers</title>
+  <style>
+    :root{
+      --bg:#0A0B14; --surface:rgba(255,255,255,0.05); --border:#2A2D3A;
+      --text:#F1F5F9; --muted:#9CA3AF; --primary:#8B5CF6; --accent:#22D3EE; --success:#10B981; --warning:#F59E0B
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
+    a{color:inherit;text-decoration:none}
+    .container{max-width:1100px;margin:0 auto}
+    .noise{background-image:radial-gradient(rgba(255,255,255,.03) 1px,transparent 1px);background-size:4px 4px}
+    .glass{backdrop-filter:blur(18px);background:var(--surface);border:1px solid rgba(139,92,246,.2);border-radius:14px}
+    .gradient-text{background:linear-gradient(90deg,var(--primary),#A855F7,var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 0 20px rgba(139,92,246,.35)}
+    .muted{color:var(--muted)}
+    .border{border:1px solid var(--border)}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:.8rem 1.1rem;border-radius:14px;border:0;cursor:pointer;font-weight:600}
+    .btn-grad{color:#fff;background:linear-gradient(90deg,#7C3AED,#A855F7)}
+    .btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted)}
+    .btn-muted{background:transparent;border:1px solid var(--border);color:var(--muted);padding:.5rem .8rem;border-radius:10px;font-weight:600;cursor:pointer}
+    .btn-disabled{opacity:.6;pointer-events:none}
+    .badge{display:inline-flex;align-items:center;border:1px solid rgba(255,255,255,.35);padding:.25rem .6rem;border-radius:9999px;font-size:.75rem;line-height:1rem}
+    .badge:hover{border-color:rgba(139,92,246,.6);color:var(--primary);cursor:pointer}
+    .pill{display:inline-block;border:1px solid var(--border);color:var(--muted);padding:.2rem .5rem;border-radius:9999px;font-size:.75rem;margin:.15rem .25rem 0 0}
+    .row{display:grid;gap:2rem}
+    @media(min-width:768px){.row-3{grid-template-columns:repeat(3,1fr)} .row-2{grid-template-columns:repeat(2,1fr)}}
+    .orb{position:fixed;inset:0;pointer-events:none;z-index:-1}
+    .orb .v{position:absolute;left:-24rem;top:-24rem;width:36rem;height:36rem;border-radius:9999px;filter:blur(80px);opacity:.5;background:radial-gradient(closest-side,rgba(139,92,246,.5),transparent 70%);mix-blend-mode:screen}
+    .orb .c{position:absolute;right:-24rem;top:40vh;width:28rem;height:28rem;border-radius:9999px;filter:blur(80px);opacity:.5;background:radial-gradient(closest-side,rgba(34,211,238,.45),transparent 70%);mix-blend-mode:screen}
+    .card{padding:1.5rem;border-radius:14px}
+    .h1{font-weight:800;font-size:clamp(2.5rem,6vw,4.2rem);letter-spacing:-0.02em}
+    .h2{font-size:2rem;font-weight:800;letter-spacing:-0.02em}
+    .h3{font-size:1.1rem;font-weight:700}
+    .center{text-align:center}
+    .mt-2{margin-top:.5rem}.mt-3{margin-top:.75rem}.mt-4{margin-top:1rem}.mt-6{margin-top:1.5rem}.mt-8{margin-top:2rem}.mt-12{margin-top:3rem}.mt-20{margin-top:5rem}
+    .pt-24{padding-top:6rem}.py-20{padding:5rem 0}.px-4{padding-left:1rem;padding-right:1rem}
+    .hidden{display:none}
+    nav a.active{color:var(--primary)}
+    .results-grid{display:grid;gap:1rem}
+    @media(min-width:768px){.results-grid{grid-template-columns:1fr}}
+    .source-badge{display:inline-flex;align-items:center;gap:.3rem;padding:.25rem .5rem;border:1px solid var(--border);border-radius:9999px;font-size:.7rem;color:#cbd5e1;margin-right:.25rem}
+    .source-dot{width:.45rem;height:.45rem;border-radius:9999px;display:inline-block}
+    .dot-naukri{background:#0ea5e9}.dot-intern{background:#10b981}.dot-linkedin{background:#2563eb}.dot-indeed{background:#7c3aed}
+    .label{font-size:.8rem;color:var(--muted)}
+    .filters-grid{display:grid;gap:.75rem;grid-template-columns:repeat(2,1fr)}
+    @media(min-width:900px){.filters-grid{grid-template-columns:repeat(4,1fr)}}
+    input[type="text"], select{background:transparent;color:var(--text);padding:.6rem .8rem;border-radius:10px;border:1px solid var(--border);outline:none;width:100%}
+    .check{display:flex;align-items:center;gap:.5rem;margin:.25rem 0;font-size:.9rem;color:#cbd5e1}
+    .check input{accent-color:#8B5CF6}
+    .count{font-size:.9rem;color:#94a3b8}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+    .num-badge{display:inline-flex;align-items:center;gap:.35rem;border:1px solid var(--border);border-radius:9999px;padding:.25rem .6rem;font-size:.75rem;color:#cbd5e1}
+    .sep{height:1px;background:rgba(255,255,255,.06);margin:1rem 0}
+
+    /* Modal styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(5px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-content {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 2rem;
+      width: 90%;
+      max-width: 700px;
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.open .modal-content {
+      transform: scale(1);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: transparent;
+      border: 0;
+      color: var(--muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    /* Custom Cursor Styles */
+    body, a, button, .btn, .badge {
+      cursor: none; /* Hides the default cursor on the whole page and on interactive elements */
+    }
+
+    .custom-cursor {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 1.5rem;
+      height: 1.5rem;
+      background: rgba(139, 92, 246, 0.2); /* Soft, blurred light effect */
+      border: 1px solid var(--primary);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0;
+      transform: translate(-50%, -50%);
+      transition: width 0.3s ease, height 0.3s ease, opacity 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+    }
+
+    /* Hover effects for interactive elements */
+    a:hover ~ .custom-cursor,
+    button:hover ~ .custom-cursor,
+    .btn:hover ~ .custom-cursor,
+    .badge:hover ~ .custom-cursor {
+      width: 2.25rem;
+      height: 2.25rem;
+      background: rgba(34, 211, 238, 0.2);
+      border-color: var(--accent);
+    }
+
+    #hero-h1, #hero-p {
+      transition: transform 0.1s ease;
+    }
+  </style>
+</head>
+<body>
+  <div class="custom-cursor"></div>
+  <div class="orb"><div class="v"></div><div class="c"></div></div>
+  <div class="noise" style="position:fixed;inset:0;pointer-events:none;z-index:-1"></div>
+
+  <header style="position:fixed;inset:0 0 auto 0;height:64px;backdrop-filter:blur(10px);background:rgba(10,11,20,.7);border-bottom:1px solid rgba(42,45,58,.6);z-index:10">
+    <nav class="container px-4" style="height:64px;display:flex;align-items:center;justify-content:space-between">
+      <a href="#/" style="font-weight:800;font-size:1.25rem">CAT_Quest</a>
+      <div style="display:flex;gap:.5rem">
+        <a href="#/" data-route="/">Home</a>
+        <a href="#/search" data-route="/search">Search</a>
+        <a href="#/saved" data-route="/saved">Saved</a>
+        <a href="#/track" data-route="/track">Track</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="pt-24">
+    <section id="home" class="container px-4">
+      <section id="hero" class="py-20 center" style="perspective: 1000px;">
+        <div id="hero-content" style="max-width:900px;margin:0 auto; transform-style: preserve-3d;">
+          <h1 id="hero-h1" class="h1"><span class="gradient-text">Search once.</span><br><span>See more. Get hired faster.</span></h1>
+          <p id="hero-p" class="mt-4 muted" style="font-size:1.125rem;max-width:680px;margin:0 auto">
+            CAT_Quest aggregates jobs from top platforms into one clean search.
+          </p>
+
+          <form id="searchForm" class="glass card mt-8" style="max-width:780px;margin:0 auto">
+            <div style="display:flex;flex-wrap:wrap;gap:.75rem">
+              <input id="kw" placeholder="Role, e.g., SDE intern"
+                     style="flex:1 1 260px;background:transparent;color:var(--text);padding:.8rem 1rem;border-radius:12px;border:1px solid var(--border);outline:none">
+              <input id="loc" placeholder="Location"
+                     style="flex:0 0 260px;background:transparent;color:var(--text);padding:.8rem 1rem;border-radius:12px;border:1px solid var(--border);outline:none">
+              <button type="button" id="remoteBtn" class="btn btn-outline">Remote: Off</button>
+              <button class="btn btn-grad">Search jobs</button>
+            </div>
+          </form>
+
+          <div class="mt-3" style="display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;align-items:center">
+            <span class="muted" style="font-size:.9rem">Try:</span>
+            <span class="badge" data-q="Senior Frontend Engineer">Senior Frontend Engineer</span>
+            <span class="badge" data-q="Full Stack Developer">Full Stack Developer</span>
+            <span class="badge" data-q="Product Manager">Product Manager</span>
+            <span class="badge" data-q="Data Scientist">Data Scientist</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="py-20">
+        <div class="row row-3 container" style="max-width:900px">
+          <div class="glass card center border">
+            <div class="card" style="width:48px;height:48px;margin:0 auto;border-radius:9999px;display:flex;align-items:center;justify-content:center;background:rgba(139,92,246,.12);color:var(--primary)">✨</div>
+            <h3 class="h3 mt-3">Aggregate across sources</h3>
+            <p class="muted" style="font-size:.9rem">Search LinkedIn, Indeed, Glassdoor, and more — all in one place</p>
+          </div>
+          <div class="glass card center border">
+            <div class="card" style="width:48px;height:48px;margin:0 auto;border-radius:9999px;display:flex;align-items:center;justify-content:center;background:rgba(34,211,238,.12);color:var(--accent)">🎛️</div>
+            <h3 class="h3 mt-3">Smart filters</h3>
+            <p class="muted" style="font-size:.9rem">Filter by salary, experience, location, and employment type</p>
+          </div>
+          <div class="glass card center border">
+            <div class="card" style="width:48px;height:48px;margin:0 auto;border-radius:9999px;display:flex;align-items:center;justify-content:center;background:rgba(16,185,129,.12);color:var(--success)">⚡</div>
+            <h3 class="h3 mt-3">Deduped results</h3>
+            <p class="muted" style="font-size:.9rem">See each unique job once, with all sources merged together</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="py-20">
+        <div class="glass card border" style="max-width:760px;margin:0 auto">
+          <h2 class="h2 center gradient-text">How it works</h2>
+          <div class="mt-8" style="display:grid;gap:1rem">
+            <div style="display:flex;gap:1rem">
+              <div class="card" style="width:32px;height:32px;border-radius:9999px;display:flex;align-items:center;justify-content:center;background:rgba(139,92,246,.2);color:var(--primary);font-weight:700">1</div>
+              <div><div class="h3">Search once</div><div class="muted" style="font-size:.9rem">Enter your job criteria — title, location, and preferences</div></div>
+            </div>
+            <div style="display:flex;gap:1rem">
+              <div class="card" style="width:32px;height:32px;border-radius:9999px;display:flex;align-items:center;justify-content:center;background:rgba(139,92,246,.2);color:var(--primary);font-weight:700">2</div>
+              <div><div class="h3">Get aggregated results</div><div class="muted" style="font-size:.9rem">We search across multiple job boards and merge duplicates</div></div>
+            </div>
+            <div style="display:flex;gap:1rem">
+              <div class="card" style="width:32px;height:32px;border-radius:9999px;display:flex;align-items:center;justify-content:center;background:rgba(139,92,246,.2);color:var(--primary);font-weight:700">3</div>
+              <div><div class="h3">Apply faster</div><div class="muted" style="font-size:.9rem">Click through to the source and apply in seconds</div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="center" style="padding:3rem 0;border-top:1px solid rgba(42,45,58,.6)">
+        <div class="container px-4">
+          <div class="muted" style="font-size:.9rem">Powered by your Spring Boot backend.</div>
+          <div class="muted" style="font-size:.75rem;margin-top:.5rem">Built by Team Knockers</div>
+        </div>
+      </footer>
+    </section>
+
+    <section id="search" class="hidden container px-4">
+      <div class="py-20">
+        <div class="topbar">
+          <h2 class="h2">Search</h2>
+          <div class="num-badge"><span id="resultCount">0</span> results</div>
+        </div>
+
+        <div class="glass card border mt-4">
+          <div class="filters-grid">
+            <div>
+              <div class="label">Keyword</div>
+              <input type="text" id="f-q" placeholder="e.g., SDE, React, Data">
+            </div>
+            <div>
+              <div class="label">Location</div>
+              <input type="text" id="f-loc" placeholder="e.g., Bengaluru, Remote">
+            </div>
+            <div>
+              <div class="label">Employment type</div>
+              <div class="check"><input type="checkbox" id="t-ft" checked> <label for="t-ft">Full-time</label></div>
+              <div class="check"><input type="checkbox" id="t-intern" checked> <label for="t-intern">Internship</label></div>
+              <div class="check"><input type="checkbox" id="t-contract" checked> <label for="t-contract">Contract</label></div>
+              <div class="check"><input type="checkbox" id="t-part" checked> <label for="t-part">Part-time</label></div>
+            </div>
+            <div>
+              <div class="label">Posted within</div>
+              <select id="f-posted">
+                <option value="any">Any time</option>
+                <option value="24h">Last 24 hours</option>
+                <option value="7d">Last 7 days</option>
+                <option value="30d">Last 30 days</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="row row-2">
+            <div>
+              <div class="label" style="margin-bottom:.35rem">Sources</div>
+              <div id="f-sources" style="display:flex;flex-wrap:wrap;gap:.5rem"></div>
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:.5rem;justify-content:flex-end">
+              <button type="button" id="f-remote" class="btn btn-outline">Remote only: Off</button>
+              <select id="f-sort" style="max-width:200px">
+                <option value="recent">Sort: Most recent</option>
+                <option value="relevance">Sort: Most relevant</option>
+              </select>
+              <button type="button" id="f-reset" class="btn-muted">Reset</button>
+            </div>
+          </div>
+        </div>
+
+        <p class="muted mt-2" id="searchInfo">Query: (none) | Location: (any) | Remote: No</p>
+
+        <div class="results-grid mt-6" id="resultsList"></div>
+
+        <div class="mt-6"><a href="#/" class="btn btn-outline">Back to Home</a></div>
+      </div>
+    </section>
+
+    <section id="saved" class="hidden container px-4">
+      <div class="py-20">
+        <h2 class="h2">Saved Searches</h2>
+        <div class="glass card border mt-6">No saved searches yet.</div>
+        <div class="mt-6"><a href="#/" class="btn btn-outline">Back to Home</a></div>
+      </div>
+    </section>
+
+    <section id="track" class="hidden container px-4">
+        <div class="py-20">
+            <h2 class="h2">Track Companies</h2>
+            <div id="trackList" class="glass card border mt-6">
+                <p class="muted center">No companies being tracked yet.</p>
+            </div>
+            <div class="mt-6"><a href="#/" class="btn btn-outline">Back to Home</a></div>
+        </div>
+    </section>
+  </main>
+
+  <div id="jobModal" class="modal-overlay">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeJobModal()">&times;</button>
+      <h2 id="modalTitle" class="h2"></h2>
+      <div id="modalCompany" class="muted mt-2" style="font-size:1.1rem"></div>
+      <div id="modalLocation" class="muted"></div>
+      <div class="sep"></div>
+      <div id="modalDetails"></div>
+      <div class="mt-4" id="modalButtons"></div>
+    </div>
+  </div>
+
+  <script>
+    // Frontend connects to your backend API
+    const API_URL = "http://localhost:8080/api/jobs";
+
+    // ---------- Simple hash router ----------
+    function parseHash(){
+      const hash = location.hash || "#/";
+      const [path, query] = hash.replace(/^#/, "").split("?");
+      const params = new URLSearchParams(query || "");
+      return { path: path || "/", params };
+    }
+    function setActiveNav(path){
+      document.querySelectorAll('nav a[data-route]').forEach(a=>{
+        a.classList.toggle('active', a.getAttribute('data-route') === path);
+      });
+    }
+    function showRoute(){
+      const { path, params } = parseHash();
+      document.getElementById('home').classList.toggle('hidden', path !== "/");
+      document.getElementById('search').classList.toggle('hidden', path !== "/search");
+      document.getElementById('saved').classList.toggle('hidden', path !== "/saved");
+      document.getElementById('track').classList.toggle('hidden', path !== "/track");
+      setActiveNav(path);
+      if(path === "/search"){ initFilters(params); applyFilters(); }
+      if(path === "/track"){ renderTrackedCompanies(); }
+    }
+    window.addEventListener("hashchange", showRoute);
+    window.addEventListener("load", showRoute);
+
+    // ---------- Home search / chips ----------
+    const remoteBtn = document.getElementById("remoteBtn");
+    let remoteOn = false;
+    remoteBtn?.addEventListener("click", ()=>{
+      remoteOn = !remoteOn;
+      remoteBtn.textContent = remoteOn ? "Remote: On" : "Remote: Off";
+      remoteBtn.className = "btn " + (remoteOn ? "" : "btn-outline");
+      if(remoteOn){
+        remoteBtn.style.border = "1px solid rgba(16,185,129,.5)";
+        remoteBtn.style.color = "var(--success)";
+      } else {
+        remoteBtn.style.border = "1px solid var(--border)";
+        remoteBtn.style.color = "var(--muted)";
+      }
+    });
+    document.getElementById("searchForm")?.addEventListener("submit", (e)=>{
+      e.preventDefault();
+      const kw = document.getElementById("kw").value.trim();
+      const loc = document.getElementById("loc").value.trim();
+      const q = new URLSearchParams({ q: kw, loc, remote: String(remoteOn) }).toString();
+      location.hash = "/search?" + q;
+    });
+    document.querySelectorAll(".badge[data-q]").forEach(el=>{
+      el.addEventListener("click", ()=>{
+        const q = el.getAttribute("data-q");
+        const qs = new URLSearchParams({ q }).toString();
+        location.hash = "/search?" + qs;
+      });
+    });
+
+    // ---------- Filters + Results (Search page) ----------
+    let filtersInitialized = false;
+    const els = {};
+    function el(id){ return document.getElementById(id); }
+    let globalDedupedJobs = [];
+
+    async function initFilters(params){
+      if(!filtersInitialized){
+        els.q = el("f-q");
+        els.loc = el("f-loc");
+        els.remote = el("f-remote");
+        els.sort = el("f-sort");
+        els.posted = el("f-posted");
+        els.reset = el("f-reset");
+        els.sources = el("f-sources");
+        els.count = el("resultCount");
+        els.info = el("searchInfo");
+        els.results = el("resultsList");
+
+        try {
+          const response = await fetch(API_URL);
+          if (!response.ok) throw new Error("Network response was not ok");
+          const allJobs = await response.json();
+          const sources = Array.from(new Set(allJobs.map(j => j.source)));
+          sources.forEach(s => {
+            const id = "src-" + s.toLowerCase();
+            const wrap = document.createElement("label");
+            wrap.className = "check";
+            wrap.innerHTML = `<input type="checkbox" id="${id}" checked> ${s}`;
+            els.sources.appendChild(wrap);
+          });
+        } catch (error) {
+          console.error("Failed to fetch jobs for source list:", error);
+          els.sources.innerHTML = `<span style="color:var(--warning)">Could not load sources.</span>`;
+        }
+
+        // Prefill from hash
+        els.q.value = params.get("q") || "";
+        els.loc.value = params.get("loc") || "";
+        const remoteParam = params.get("remote") === "true";
+        setRemoteFilter(remoteParam);
+
+        // Event listeners
+        const debounced = debounce(applyFilters, 160);
+        ["input","change"].forEach(ev=>{
+          els.q.addEventListener(ev, debounced);
+          els.loc.addEventListener(ev, debounced);
+          els.posted.addEventListener(ev, applyFilters);
+          els.sort.addEventListener(ev, applyFilters);
+        });
+        els.remote.addEventListener("click", ()=>{ setRemoteFilter(!remoteFilter); applyFilters(); });
+        els.sources.querySelectorAll("input[type=checkbox]").forEach(cb=>cb.addEventListener("change", applyFilters));
+        ["t-ft","t-intern","t-contract","t-part"].forEach(id=>{ el(id).addEventListener("change", applyFilters); });
+        els.reset.addEventListener("click", ()=>{
+          els.q.value = ""; els.loc.value = "";
+          setRemoteFilter(false);
+          els.posted.value = "any"; els.sort.value = "recent";
+          els.sources.querySelectorAll("input").forEach(cb=>cb.checked = true);
+          ["t-ft","t-intern","t-contract","t-part"].forEach(id=>{ el(id).checked = true; });
+          applyFilters();
+        });
+
+        filtersInitialized = true;
+      } else {
+        // Update from hash if present
+        els.q.value = params.get("q") || els.q.value;
+        els.loc.value = params.get("loc") || els.loc.value;
+        const remoteParam = params.get("remote");
+        if(remoteParam !== null) setRemoteFilter(remoteParam === "true");
+      }
+    }
+
+    let remoteFilter = false;
+    function setRemoteFilter(v){
+      remoteFilter = v;
+      els.remote.textContent = v ? "Remote only: On" : "Remote only: Off";
+      els.remote.className = "btn " + (v ? "" : "btn-outline");
+      if(v){ els.remote.style.border = "1px solid rgba(16,185,129,.5)"; els.remote.style.color = "var(--success)"; }
+      else { els.remote.style.border = "1px solid var(--border)"; els.remote.style.color = "var(--muted)"; }
+    }
+
+    function debounce(fn, ms){
+      let t; return (...a)=>{ clearTimeout(t); t = setTimeout(()=>fn(...a), ms); };
+    }
+
+    function timeAgo(iso){
+      if (!iso) return "N/A";
+      const diff = (Date.now() - new Date(iso).getTime())/1000;
+      if(diff < 60) return `${Math.floor(diff)}s ago`;
+      if(diff < 3600) return `${Math.floor(diff/60)}m ago`;
+      if(diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+      return `${Math.floor(diff/86400)}d ago`;
+    }
+
+    function dedupeJobs(list){
+      const map = new Map();
+      for(const j of list){
+          const key = `${j.company.name}|${j.title}|${j.location.city}`;
+          if(!map.has(key)){
+              map.set(key, { ...j, sources: [j.source], dupes: 0 });
+          } else {
+              const g = map.get(key);
+              g.sources.push(j.source);
+              g.dupes += 1;
+          }
+      }
+      return Array.from(map.values());
+    }
+
+    async function applyFilters(){
+      els.results.innerHTML = `<div class="glass card border center muted">Loading jobs...</div>`;
+
+      // Read filter values
+      const q = els.q.value.trim().toLowerCase();
+      const loc = els.loc.value.trim().toLowerCase();
+      const sort = els.sort.value;
+      const typesWanted = new Set(
+        ["t-ft","t-intern","t-contract","t-part"].filter(id=>el(id).checked).map(id=>{
+          if(id==="t-ft") return "FULL_TIME";
+          if(id==="t-intern") return "INTERN";
+          if(id==="t-contract") return "CONTRACT";
+          return "PART_TIME";
+        })
+      );
+      const srcSelected = Array.from(els.sources.querySelectorAll("input:checked")).map(cb => cb.id.replace("src-","").toLowerCase());
+
+      // Construct the URL with query parameters for the backend
+      const params = new URLSearchParams();
+      if (q) params.append('q', q);
+      if (loc) params.append('loc', loc);
+      if (remoteFilter) params.append('remote', 'true');
+      typesWanted.forEach(t => params.append('type', t));
+      srcSelected.forEach(s => params.append('source', s));
+
+      const apiUrl = `${API_URL}?${params.toString()}`;
+
+      try {
+        const response = await fetch(apiUrl);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+
+        let deduped = dedupeJobs(data);
+
+        if(sort === "recent"){
+          // Your backend doesn't have a 'posted_at' field. We'll use a placeholder sort.
+          deduped.sort((a,b)=> a.id - b.id);
+        } else {
+          deduped.sort((a,b)=> b.id - a.id);
+        }
+
+        globalDedupedJobs = deduped;
+
+        els.count.textContent = deduped.length;
+        els.info.textContent = `Query: ${els.q.value || "(none)"} | Location: ${els.loc.value || "(any)"} | Remote: ${remoteFilter ? "Yes" : "No"}`;
+
+        const html = deduped.map(j => jobCardHTML(j)).join("");
+        els.results.innerHTML = html || `<div class="glass card border center muted">No results. Try different filters or keywords.</div>`;
+
+      } catch (error) {
+        console.error("Failed to fetch jobs:", error);
+        els.results.innerHTML = `<div class="glass card border center" style="color: var(--warning)">Error fetching jobs. Is the backend server running at ` + API_URL + `?</div>`;
+        els.count.textContent = 0;
+      }
+    }
+
+<!--    async function applyFilters(){-->
+<!--      els.results.innerHTML = <div class="glass card border center muted">Loading jobs...</div>;-->
+
+<!--      const q = els.q.value.trim().toLowerCase();-->
+<!--      const loc = els.loc.value.trim().toLowerCase();-->
+<!--      const sort = els.sort.value;-->
+<!--      const typesWanted = new Set(-->
+<!--        ["t-ft","t-intern","t-contract","t-part"].filter(id=>el(id).checked).map(id=>{-->
+<!--          if(id==="t-ft") return "FULL_TIME";-->
+<!--          if(id==="t-intern") return "INTERN";-->
+<!--          if(id==="t-contract") return "CONTRACT";-->
+<!--          return "PART_TIME";-->
+<!--        })-->
+<!--      );-->
+<!--      // Your backend doesn't seem to have a source filter, so we won't send it to the API.-->
+<!--      // If you implement this on the backend, you can uncomment the lines below.-->
+<!--      // const srcSelected = Array.from(els.sources.querySelectorAll("input:checked")).map(cb => cb.id.replace("src-","").toLowerCase());-->
+
+<!--      const params = new URLSearchParams();-->
+<!--      if (q) params.append('q', q);-->
+<!--      if (loc) params.append('loc', loc);-->
+<!--      if (remoteFilter) params.append('remote', 'true');-->
+<!--      typesWanted.forEach(t => params.append('type', t));-->
+<!--      params.append('sort', sort);-->
+
+<!--      const apiUrl = http://localhost:8080/api/jobs?${params.toString()};-->
+
+<!--      try {-->
+<!--        const response = await fetch(apiUrl);-->
+<!--        if (!response.ok) {-->
+<!--            throw new Error(HTTP error! status: ${response.status});-->
+<!--        }-->
+<!--        const data = await response.json();-->
+
+<!--        // Frontend deduplication is no longer needed as the backend would handle it-->
+<!--        // The mock backend returns a list of jobs, so we will use it as is.-->
+<!--        let jobs = data;-->
+
+<!--        globalDedupedJobs = jobs;-->
+
+<!--        els.count.textContent = jobs.length;-->
+<!--        els.info.textContent = Query: ${els.q.value || "(none)"} | Location: ${els.loc.value || "(any)"} | Remote: ${remoteFilter ? "Yes" : "No"};-->
+
+<!--        const html = jobs.map(j => jobCardHTML(j)).join("");-->
+<!--        els.results.innerHTML = html || <div class="glass card border center muted">No results. Try different filters or keywords.</div>;-->
+
+<!--      } catch (error) {-->
+<!--        console.error("Failed to fetch jobs:", error);-->
+<!--        els.results.innerHTML = <div class="glass card border center" style="color: var(--warning)">Error fetching jobs. Is the backend server running?</div>;-->
+<!--        els.count.textContent = 0;-->
+<!--      }-->
+<!--    }-->
+
+
+    function escapeHTML(s){ return (s||"").replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m])); }
+
+    function jobCardHTML(j){
+      const companyName = j.company ? j.company.name : "N/A";
+      const location = j.location ? `${j.location.city}, ${j.location.state}` : "N/A";
+      const type = j.type ? j.type.replace('_', ' ') : "N/A";
+      const salary = j.salary ? ` • ₹${j.salary.toLocaleString()}` : "";
+      const postedAt = j.postedAt ? timeAgo(j.postedAt) : 'N/A';
+
+      const dup = j.dupes > 0 ? `<span class="num-badge" title="Duplicates merged">Merged ${j.dupes} duplicates</span>` : "";
+      const remoteTag = j.remote ? `<span class="pill" style="border-color:rgba(16,185,129,.4);color:var(--success)">Remote</span>` : "";
+
+      // Your backend doesn't return skills, so we'll use a placeholder for now
+      const skills = '';
+
+      const srcBadges = (j.sources||[j.source]).map(s=>{
+        const k = s.toLowerCase();
+        const dot = k.includes("naukri") ? "dot-naukri" : k.includes("intern") ? "dot-intern" : k.includes("linkedin") ? "dot-linkedin" : "dot-indeed";
+        return `<span class="source-badge"><span class="source-dot ${dot}"></span>${escapeHTML(s)}</span>`;
+      }).join("");
+
+      return `
+        <div class="glass card border">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+            <div>
+              <div class="h3" style="display:flex;align-items:center;gap:.5rem">${escapeHTML(j.title)} ${remoteTag}</div>
+              <div class="muted mt-2" style="font-size:.9rem">
+                <a href="javascript:void(0)" onclick="showJobDetails('${j.id}')" style="color: var(--primary); font-weight: bold;">
+                  ${escapeHTML(companyName)}
+                </a> • ${escapeHTML(location)} • ${escapeHTML(type)}${salary}
+              </div>
+            </div>
+            <div class="muted" style="font-size:.85rem">${postedAt}</div>
+          </div>
+          <div class="mt-3">${skills}</div>
+          <div class="mt-3">${srcBadges} ${dup}</div>
+          <div class="mt-3" style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <a href="${j.jobUrl}" target="_blank" class="btn btn-grad">Apply on ${escapeHTML(j.source)}</a>
+            <button class="btn btn-outline" onclick="showJobDetails('${j.id}')">View details</button>
+            <button class="btn btn-muted" onclick="trackCompany('${j.company.name}', '${j.company.id}')">Track Company</button>
+          </div>
+        </div>
+      `;
+    }
+
+    // ---------- Modal functionality ----------
+    const modal = document.getElementById("jobModal");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalCompany = document.getElementById("modalCompany");
+    const modalLocation = document.getElementById("modalLocation");
+    const modalDetails = document.getElementById("modalDetails");
+    const modalButtons = document.getElementById("modalButtons");
+
+    function showJobDetails(jobId) {
+      const job = globalDedupedJobs.find(j => j.id == jobId);
+      if (!job) {
+        alert("Job details not found.");
+        return;
+      }
+      const companyName = job.company ? job.company.name : "N/A";
+      const location = job.location ? `${job.location.city}, ${job.location.state}` : "N/A";
+
+      modalTitle.textContent = job.title;
+      modalCompany.textContent = companyName;
+      modalLocation.textContent = location;
+
+      let detailsHTML = `
+        <p class="muted mt-4">${escapeHTML(job.description)}</p>
+        <div class="sep"></div>
+        <div style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))">
+          <div>
+            <div class="label">Employment Type</div>
+            <div>${escapeHTML(job.type)}</div>
+          </div>
+          <div>
+            <div class="label">Salary</div>
+            <div>₹${job.salary.toLocaleString()}</div>
+          </div>
+          <div>
+            <div class="label">Source</div>
+            <div>${escapeHTML(job.source)}</div>
+          </div>
+          <div>
+            <div class="label">Posted</div>
+            <div>${timeAgo(job.posted_at)}</div>
+          </div>
+        </div>
+      `;
+
+      modalDetails.innerHTML = detailsHTML;
+
+      const buttonsHTML = `
+        <a href="${j.jobUrl}" target="_blank" class="btn btn-grad">Apply on ${escapeHTML(j.source)}</a>
+      `;
+      modalButtons.innerHTML = buttonsHTML;
+
+      modal.classList.add("open");
+    }
+
+    function closeJobModal() {
+      modal.classList.remove("open");
+    }
+
+    // Close modal when clicking outside
+    modal.addEventListener("click", (e) => {
+      if (e.target.classList.contains("modal-overlay")) {
+        closeJobModal();
+      }
+    });
+
+    // ---------- Tracking functionality ----------
+    let trackedCompanies = [];
+
+    function trackCompany(companyName, companyId) {
+        const isAlreadyTracked = trackedCompanies.some(company => company.id == companyId);
+
+        if (isAlreadyTracked) {
+            alert(`${companyName} is already being tracked!`);
+            return;
+        }
+
+        trackedCompanies.push({
+            id: companyId,
+            name: companyName,
+            lastCheck: new Date(),
+            status: "Checking for new jobs..."
+        });
+
+        alert(`${companyName} has been added to your tracking list!`);
+        renderTrackedCompanies();
+    }
+
+    function renderTrackedCompanies() {
+        const trackListEl = document.getElementById('trackList');
+        if (!trackListEl) return;
+
+        if (trackedCompanies.length === 0) {
+            trackListEl.innerHTML = `<p class="muted center">No companies being tracked yet.</p>`;
+            return;
+        }
+
+        const html = trackedCompanies.map(company => {
+            return `
+                <div class="glass card border" style="margin-bottom: 1rem;">
+                    <h3 class="h3" style="color: var(--primary);">${escapeHTML(company.name)}</h3>
+                    <p class="muted">Status: ${escapeHTML(company.status)}</p>
+                    <p class="muted" style="font-size: .85rem;">Last checked: ${new Date(company.lastCheck).toLocaleString()}</p>
+                    <button class="btn btn-outline btn-muted" style="margin-top: 1rem;" onclick="removeTrackedCompany('${company.id}')">Stop Tracking</button>
+                </div>
+            `;
+        }).join('');
+
+        trackListEl.innerHTML = html;
+    }
+
+    function removeTrackedCompany(companyId) {
+        trackedCompanies = trackedCompanies.filter(company => company.id != companyId);
+        renderTrackedCompanies();
+    }
+
+
+    // ---------- Custom Cursor and Parallax Effect ----------
+    const customCursor = document.querySelector(".custom-cursor");
+    const heroSection = document.getElementById("hero");
+    const heroH1 = document.getElementById("hero-h1");
+    const heroP = document.getElementById("hero-p");
+
+    const mouse = { x: 0, y: 0 };
+    const prevMouse = { x: 0, y: 0 };
+    const speed = 0.15; // Lower value for slower, smoother following
+
+    let isMoving = false;
+    let timer;
+
+    window.addEventListener('mousemove', (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+      customCursor.style.opacity = 1;
+      isMoving = true;
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        isMoving = false;
+      }, 200);
+
+      if (heroSection) {
+        applyParallax(e);
+      }
+    });
+
+    function updateCursorPosition() {
+      prevMouse.x += (mouse.x - prevMouse.x) * speed;
+      prevMouse.y += (mouse.y - prevMouse.y) * speed;
+
+      const translateX = prevMouse.x - 12;
+      const translateY = prevMouse.y - 12;
+
+      customCursor.style.transform = `translate(${translateX}px, ${translateY}px)`;
+
+      requestAnimationFrame(updateCursorPosition);
+    }
+
+    updateCursorPosition();
+
+    function applyParallax(e) {
+      const rect = heroSection.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+
+      const offsetX = (e.clientX - centerX) / (rect.width / 2);
+      const offsetY = (e.clientY - centerY) / (rect.height / 2);
+
+      const h1X = -offsetX * 10;
+      const h1Y = -offsetY * 10;
+      const pX = -offsetX * 5;
+      const pY = -offsetY * 5;
+
+      heroH1.style.transform = `translate3d(${h1X}px, ${h1Y}px, 0)`;
+      heroP.style.transform = `translate3d(${pX}px, ${pY}px, 0)`;
+    }
+  </script>
+</body>
+</html>
+
