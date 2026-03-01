@@ -1,6 +1,9 @@
 package com.ren.CatQuest.scraper.impl;
 
-import com.ren.CatQuest.model.*;
+import com.ren.CatQuest.job.entity.Company;
+import com.ren.CatQuest.job.entity.Job;
+import com.ren.CatQuest.job.entity.JobType;
+import com.ren.CatQuest.job.entity.Location;
 import com.ren.CatQuest.scraper.BaseScraper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
