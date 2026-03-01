@@ -1,6 +1,6 @@
 package com.ren.CatQuest.scraper;
 
-import com.ren.CatQuest.model.Job;
+import com.ren.CatQuest.job.entity.Job;
 import java.util.List;
 
 public interface BaseScraper {

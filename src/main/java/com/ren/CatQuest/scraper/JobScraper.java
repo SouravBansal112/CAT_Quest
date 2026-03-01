@@ -1,7 +1,7 @@
 package com.ren.CatQuest.scraper;
 
-import com.ren.CatQuest.model.Job;
-import com.ren.CatQuest.service.JobService;
+import com.ren.CatQuest.job.entity.Job;
+import com.ren.CatQuest.job.service.JobService;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -25,9 +25,9 @@ public class JobScraper {
 
 //package com.ren.CatQuest.scraper;
 //
-//import com.ren.CatQuest.model.Job;
+//import com.ren.CatQuest.job.entity.Job;
 //import com.ren.CatQuest.scraper.impl.*;
-//import com.ren.CatQuest.service.JobService;
+//import com.ren.CatQuest.job.service.JobService;
 //import org.springframework.stereotype.Component;
 //
 //import java.util.ArrayList;

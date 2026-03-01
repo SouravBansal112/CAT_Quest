@@ -67,7 +67,10 @@
 
 package com.ren.CatQuest.scraper;
 
-import com.ren.CatQuest.model.*;
+import com.ren.CatQuest.job.entity.Company;
+import com.ren.CatQuest.job.entity.Job;
+import com.ren.CatQuest.job.entity.JobType;
+import com.ren.CatQuest.job.entity.Location;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;

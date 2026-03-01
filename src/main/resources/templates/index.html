@@ -834,3 +834,455 @@
 </body>
 </html>
 
+<!--// Frontend connects to your backend API-->
+<!--const API_URL = "http://localhost:8080/api/jobs";-->
+
+<!--// &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; Simple hash router &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
+<!--function parseHash(){-->
+<!--const hash = location.hash || "#/";-->
+<!--const [path, query] = hash.replace(/^#/, "").split("?");-->
+<!--const params = new URLSearchParams(query || "");-->
+<!--return { path: path || "/", params };-->
+<!--}-->
+<!--function setActiveNav(path){-->
+<!--document.querySelectorAll('nav a[data-route]').forEach(a=>{-->
+<!--a.classList.toggle('active', a.getAttribute('data-route') === path);-->
+<!--});-->
+<!--}-->
+<!--function showRoute(){-->
+<!--const { path, params } = parseHash();-->
+<!--document.getElementById('home').classList.toggle('hidden', path !== "/");-->
+<!--document.getElementById('search').classList.toggle('hidden', path !== "/search");-->
+<!--document.getElementById('saved').classList.toggle('hidden', path !== "/saved");-->
+<!--document.getElementById('track').classList.toggle('hidden', path !== "/track");-->
+<!--setActiveNav(path);-->
+<!--if(path === "/search"){ initFilters(params); applyFilters(); }-->
+<!--if(path === "/track"){ renderTrackedCompanies(); }-->
+<!--}-->
+<!--window.addEventListener("hashchange", showRoute);-->
+<!--window.addEventListener("load", showRoute);-->
+
+<!--// &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; Home search / chips &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
+<!--const remoteBtn = document.getElementById("remoteBtn");-->
+<!--let remoteOn = false;-->
+<!--remoteBtn?.addEventListener("click", ()=>{-->
+<!--remoteOn = !remoteOn;-->
+<!--remoteBtn.textContent = remoteOn ? "Remote: On" : "Remote: Off";-->
+<!--remoteBtn.className = "btn " + (remoteOn ? "" : "btn-outline");-->
+<!--if(remoteOn){-->
+<!--remoteBtn.style.border = "1px solid rgba(16,185,129,.5)";-->
+<!--remoteBtn.style.color = "var(&#45;&#45;success)";-->
+<!--} else {-->
+<!--remoteBtn.style.border = "1px solid var(&#45;&#45;border)";-->
+<!--remoteBtn.style.color = "var(&#45;&#45;muted)";-->
+<!--}-->
+<!--});-->
+<!--document.getElementById("searchForm")?.addEventListener("submit", (e)=>{-->
+<!--e.preventDefault();-->
+<!--const kw = document.getElementById("kw").value.trim();-->
+<!--const loc = document.getElementById("loc").value.trim();-->
+<!--const q = new URLSearchParams({ q: kw, loc, remote: String(remoteOn) }).toString();-->
+<!--location.hash = "/search?" + q;-->
+<!--});-->
+<!--document.querySelectorAll(".badge[data-q]").forEach(el=>{-->
+<!--el.addEventListener("click", ()=>{-->
+<!--const q = el.getAttribute("data-q");-->
+<!--const qs = new URLSearchParams({ q }).toString();-->
+<!--location.hash = "/search?" + qs;-->
+<!--});-->
+<!--});-->
+
+<!--// &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; Filters + Results (Search page) &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
+<!--let filtersInitialized = false;-->
+<!--const els = {};-->
+<!--function el(id){ return document.getElementById(id); }-->
+<!--let globalDedupedJobs = [];-->
+
+<!--async function initFilters(params){-->
+<!--if(!filtersInitialized){-->
+<!--els.q = el("f-q");-->
+<!--els.loc = el("f-loc");-->
+<!--els.remote = el("f-remote");-->
+<!--els.sort = el("f-sort");-->
+<!--els.posted = el("f-posted");-->
+<!--els.reset = el("f-reset");-->
+<!--els.sources = el("f-sources");-->
+<!--els.count = el("resultCount");-->
+<!--els.info = el("searchInfo");-->
+<!--els.results = el("resultsList");-->
+
+<!--try {-->
+<!--const response = await fetch(API_URL);-->
+<!--if (!response.ok) throw new Error("Network response was not ok");-->
+<!--const allJobs = await response.json();-->
+<!--const sources = Array.from(new Set(allJobs.map(j => j.source)));-->
+<!--sources.forEach(s => {-->
+<!--const id = "src-" + s.toLowerCase();-->
+<!--const wrap = document.createElement("label");-->
+<!--wrap.className = "check";-->
+<!--wrap.innerHTML = <input type="checkbox" id="${id}" checked> ${s};-->
+<!--els.sources.appendChild(wrap);-->
+<!--});-->
+<!--} catch (error) {-->
+<!--console.error("Failed to fetch jobs for source list:", error);-->
+<!--els.sources.innerHTML = <span style="color:var(&#45;&#45;warning)">Could not load sources.</span>;-->
+<!--}-->
+
+<!--// Prefill from hash-->
+<!--els.q.value = params.get("q") || "";-->
+<!--els.loc.value = params.get("loc") || "";-->
+<!--const remoteParam = params.get("remote") === "true";-->
+<!--setRemoteFilter(remoteParam);-->
+
+<!--// Event listeners-->
+<!--const debounced = debounce(applyFilters, 160);-->
+<!--["input","change"].forEach(ev=>{-->
+<!--els.q.addEventListener(ev, debounced);-->
+<!--els.loc.addEventListener(ev, debounced);-->
+<!--els.posted.addEventListener(ev, applyFilters);-->
+<!--els.sort.addEventListener(ev, applyFilters);-->
+<!--});-->
+<!--els.remote.addEventListener("click", ()=>{ setRemoteFilter(!remoteFilter); applyFilters(); });-->
+<!--els.sources.querySelectorAll("input[type=checkbox]").forEach(cb=>cb.addEventListener("change", applyFilters));-->
+<!--["t-ft","t-intern","t-contract","t-part"].forEach(id=>{ el(id).addEventListener("change", applyFilters); });-->
+<!--els.reset.addEventListener("click", ()=>{-->
+<!--els.q.value = ""; els.loc.value = "";-->
+<!--setRemoteFilter(false);-->
+<!--els.posted.value = "any"; els.sort.value = "recent";-->
+<!--els.sources.querySelectorAll("input").forEach(cb=>cb.checked = true);-->
+<!--["t-ft","t-intern","t-contract","t-part"].forEach(id=>{ el(id).checked = true; });-->
+<!--applyFilters();-->
+<!--});-->
+
+<!--filtersInitialized = true;-->
+<!--} else {-->
+<!--// Update from hash if present-->
+<!--els.q.value = params.get("q") || els.q.value;-->
+<!--els.loc.value = params.get("loc") || els.loc.value;-->
+<!--const remoteParam = params.get("remote");-->
+<!--if(remoteParam !== null) setRemoteFilter(remoteParam === "true");-->
+<!--}-->
+<!--}-->
+
+<!--let remoteFilter = false;-->
+<!--function setRemoteFilter(v){-->
+<!--remoteFilter = v;-->
+<!--els.remote.textContent = v ? "Remote only: On" : "Remote only: Off";-->
+<!--els.remote.className = "btn " + (v ? "" : "btn-outline");-->
+<!--if(v){ els.remote.style.border = "1px solid rgba(16,185,129,.5)"; els.remote.style.color = "var(&#45;&#45;success)"; }-->
+<!--else { els.remote.style.border = "1px solid var(&#45;&#45;border)"; els.remote.style.color = "var(&#45;&#45;muted)"; }-->
+<!--}-->
+
+<!--function debounce(fn, ms){-->
+<!--let t; return (...a)=>{ clearTimeout(t); t = setTimeout(()=>fn(...a), ms); };-->
+<!--}-->
+
+<!--function timeAgo(iso){-->
+<!--if (!iso) return "N/A";-->
+<!--const diff = (Date.now() - new Date(iso).getTime())/1000;-->
+<!--if(diff < 60) return ${Math.floor(diff)}s ago;-->
+<!--if(diff < 3600) return ${Math.floor(diff/60)}m ago;-->
+<!--if(diff < 86400) return ${Math.floor(diff/3600)}h ago;-->
+<!--return ${Math.floor(diff/86400)}d ago;-->
+<!--}-->
+
+<!--function dedupeJobs(list){-->
+<!--const map = new Map();-->
+<!--for(const j of list){-->
+<!--const key = ${j.company.name}|${j.title}|${j.location.city};-->
+<!--if(!map.has(key)){-->
+<!--map.set(key, { ...j, sources: [j.source], dupes: 0 });-->
+<!--} else {-->
+<!--const g = map.get(key);-->
+<!--g.sources.push(j.source);-->
+<!--g.dupes += 1;-->
+<!--}-->
+<!--}-->
+<!--return Array.from(map.values());-->
+<!--}-->
+
+<!--async function applyFilters(){-->
+<!--els.results.innerHTML = <div class="glass card border center muted">Loading jobs...</div>;-->
+
+<!--// Read filter values-->
+<!--const q = els.q.value.trim().toLowerCase();-->
+<!--const loc = els.loc.value.trim().toLowerCase();-->
+<!--const sort = els.sort.value;-->
+<!--const typesWanted = new Set(-->
+<!--["t-ft","t-intern","t-contract","t-part"].filter(id=>el(id).checked).map(id=>{-->
+<!--if(id==="t-ft") return "FULL_TIME";-->
+<!--if(id==="t-intern") return "INTERN";-->
+<!--if(id==="t-contract") return "CONTRACT";-->
+<!--return "PART_TIME";-->
+<!--})-->
+<!--);-->
+<!--const srcSelected = Array.from(els.sources.querySelectorAll("input:checked")).map(cb => cb.id.replace("src-","").toLowerCase());-->
+
+<!--// Construct the URL with query parameters for the backend-->
+<!--const params = new URLSearchParams();-->
+<!--if (q) params.append('q', q);-->
+<!--if (loc) params.append('loc', loc);-->
+<!--if (remoteFilter) params.append('remote', 'true');-->
+<!--typesWanted.forEach(t => params.append('type', t));-->
+<!--srcSelected.forEach(s => params.append('source', s));-->
+<!--params.append('sort', sort);-->
+
+<!--const apiUrl = ${API_URL}?${params.toString()};-->
+
+<!--try {-->
+<!--const response = await fetch(apiUrl);-->
+<!--if (!response.ok) {-->
+<!--throw new Error(HTTP error! status: ${response.status});-->
+<!--}-->
+<!--const data = await response.json();-->
+
+<!--let deduped = dedupeJobs(data);-->
+
+<!--// This is a fallback sort since the backend isn't handling it yet-->
+<!--if (sort === "recent") {-->
+<!--// Placeholder: sorting by id descending-->
+<!--deduped.sort((a, b) => b.id - a.id);-->
+<!--} else {-->
+<!--// Placeholder: sorting by id ascending (as a form of "relevance")-->
+<!--deduped.sort((a, b) => a.id - b.id);-->
+<!--}-->
+
+<!--globalDedupedJobs = deduped;-->
+
+<!--els.count.textContent = deduped.length;-->
+<!--els.info.textContent = Query: ${els.q.value || "(none)"} | Location: ${els.loc.value || "(any)"} | Remote: ${remoteFilter ? "Yes" : "No"};-->
+
+<!--const html = deduped.map(j => jobCardHTML(j)).join("");-->
+<!--els.results.innerHTML = html || <div class="glass card border center muted">No results. Try different filters or keywords.</div>;-->
+
+<!--} catch (error) {-->
+<!--console.error("Failed to fetch jobs:", error);-->
+<!--els.results.innerHTML = <div class="glass card border center" style="color: var(&#45;&#45;warning)">Error fetching jobs. Is the backend server running?</div>;-->
+<!--els.count.textContent = 0;-->
+<!--}-->
+<!--}-->
+
+<!--function escapeHTML(s){ return (s||"").replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m])); }-->
+
+<!--function jobCardHTML(j){-->
+<!--const companyName = j.company ? j.company.name : "N/A";-->
+<!--const location = j.location ? ${j.location.city}, ${j.location.state} : "N/A";-->
+<!--const type = j.type ? j.type.replace('_', ' ') : "N/A";-->
+<!--const salary = j.salary ? ` • ₹${j.salary.toLocaleString()}` : "";-->
+<!--const postedAt = j.postedAt ? timeAgo(j.postedAt) : 'N/A';-->
+
+<!--const dup = j.dupes > 0 ? <span class="num-badge" title="Duplicates merged">Merged ${j.dupes} duplicates</span> : "";-->
+<!--const remoteTag = j.remote ? <span class="pill" style="border-color:rgba(16,185,129,.4);color:var(&#45;&#45;success)">Remote</span> : "";-->
+
+<!--const skills = '';-->
+
+<!--const srcBadges = (j.sources||[j.source]).map(s=>{-->
+<!--const k = s.toLowerCase();-->
+<!--const dot = k.includes("naukri") ? "dot-naukri" : k.includes("intern") ? "dot-intern" : k.includes("linkedin") ? "dot-linkedin" : "dot-indeed";-->
+<!--return <span class="source-badge"><span class="source-dot ${dot}"></span>${escapeHTML(s)}</span>;-->
+<!--}).join("");-->
+
+<!--return `-->
+<!--<div class="glass card border">-->
+<!--    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap">-->
+<!--        <div>-->
+<!--            <div class="h3" style="display:flex;align-items:center;gap:.5rem">${escapeHTML(j.title)} ${remoteTag}</div>-->
+<!--            <div class="muted mt-2" style="font-size:.9rem">-->
+<!--                <a href="javascript:void(0)" onclick="showJobDetails('${j.id}')" style="color: var(&#45;&#45;primary); font-weight: bold;">-->
+<!--                    ${escapeHTML(companyName)}-->
+<!--                </a> • ${escapeHTML(location)} • ${escapeHTML(type)}${salary}-->
+<!--            </div>-->
+<!--        </div>-->
+<!--        <div class="muted" style="font-size:.85rem">${postedAt}</div>-->
+<!--    </div>-->
+<!--    <div class="mt-3">${skills}</div>-->
+<!--    <div class="mt-3">${srcBadges} ${dup}</div>-->
+<!--    <div class="mt-3" style="display:flex;gap:.5rem;flex-wrap:wrap">-->
+<!--        <a href="${j.jobUrl}" target="_blank" class="btn btn-grad">Apply on ${escapeHTML(j.source)}</a>-->
+<!--        <button class="btn btn-outline" onclick="showJobDetails('${j.id}')">View details</button>-->
+<!--        <button class="btn btn-muted" onclick="trackCompany('${j.company.name}', '${j.company.id}')">Track Company</button>-->
+<!--    </div>-->
+<!--</div>-->
+<!--`;-->
+<!--}-->
+
+<!--// &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; Modal functionality &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
+<!--const modal = document.getElementById("jobModal");-->
+<!--const modalTitle = document.getElementById("modalTitle");-->
+<!--const modalCompany = document.getElementById("modalCompany");-->
+<!--const modalLocation = document.getElementById("modalLocation");-->
+<!--const modalDetails = document.getElementById("modalDetails");-->
+<!--const modalButtons = document.getElementById("modalButtons");-->
+
+<!--function showJobDetails(jobId) {-->
+<!--const job = globalDedupedJobs.find(j => j.id == jobId);-->
+<!--if (!job) {-->
+<!--alert("Job details not found.");-->
+<!--return;-->
+<!--}-->
+<!--const companyName = job.company ? job.company.name : "N/A";-->
+<!--const location = job.location ? ${job.location.city}, ${job.location.state} : "N/A";-->
+<!--const source = job.source ? job.source : "N/A";-->
+<!--const jobUrl = job.jobUrl ? job.jobUrl : "#";-->
+
+<!--modalTitle.textContent = job.title;-->
+<!--modalCompany.textContent = companyName;-->
+<!--modalLocation.textContent = location;-->
+
+<!--let detailsHTML = `-->
+<!--<p class="muted mt-4">${escapeHTML(job.description)}</p>-->
+<!--<div class="sep"></div>-->
+<!--<div style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))">-->
+<!--    <div>-->
+<!--        <div class="label">Employment Type</div>-->
+<!--        <div>${escapeHTML(job.type)}</div>-->
+<!--    </div>-->
+<!--    <div>-->
+<!--        <div class="label">Salary</div>-->
+<!--        <div>₹${job.salary.toLocaleString()}</div>-->
+<!--    </div>-->
+<!--    <div>-->
+<!--        <div class="label">Source</div>-->
+<!--        <div>${escapeHTML(source)}</div>-->
+<!--    </div>-->
+<!--    <div>-->
+<!--        <div class="label">Posted</div>-->
+<!--        <div>${timeAgo(job.posted_at)}</div>-->
+<!--    </div>-->
+<!--</div>-->
+<!--`;-->
+
+<!--modalDetails.innerHTML = detailsHTML;-->
+
+<!--const buttonsHTML = `-->
+<!--<a href="${jobUrl}" target="_blank" class="btn btn-grad">Apply on ${escapeHTML(source)}</a>-->
+<!--`;-->
+<!--modalButtons.innerHTML = buttonsHTML;-->
+
+<!--modal.classList.add("open");-->
+<!--}-->
+
+<!--function closeJobModal() {-->
+<!--modal.classList.remove("open");-->
+<!--}-->
+
+<!--// Close modal when clicking outside-->
+<!--modal.addEventListener("click", (e) => {-->
+<!--if (e.target.classList.contains("modal-overlay")) {-->
+<!--closeJobModal();-->
+<!--}-->
+<!--});-->
+
+<!--// &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; Tracking functionality &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
+<!--let trackedCompanies = [];-->
+
+<!--function trackCompany(companyName, companyId) {-->
+<!--const isAlreadyTracked = trackedCompanies.some(company => company.id == companyId);-->
+
+<!--if (isAlreadyTracked) {-->
+<!--alert(${companyName} is already being tracked!);-->
+<!--return;-->
+<!--}-->
+
+<!--trackedCompanies.push({-->
+<!--id: companyId,-->
+<!--name: companyName,-->
+<!--lastCheck: new Date(),-->
+<!--status: "Checking for new jobs..."-->
+<!--});-->
+
+<!--alert(${companyName} has been added to your tracking list!);-->
+<!--renderTrackedCompanies();-->
+<!--}-->
+
+<!--function renderTrackedCompanies() {-->
+<!--const trackListEl = document.getElementById('trackList');-->
+<!--if (!trackListEl) return;-->
+
+<!--if (trackedCompanies.length === 0) {-->
+<!--trackListEl.innerHTML = <p class="muted center">No companies being tracked yet.</p>;-->
+<!--return;-->
+<!--}-->
+
+<!--const html = trackedCompanies.map(company => {-->
+<!--return `-->
+<!--<div class="glass card border" style="margin-bottom: 1rem;">-->
+<!--    <h3 class="h3" style="color: var(&#45;&#45;primary);">${escapeHTML(company.name)}</h3>-->
+<!--    <p class="muted">Status: ${escapeHTML(company.status)}</p>-->
+<!--    <p class="muted" style="font-size: .85rem;">Last checked: ${new Date(company.lastCheck).toLocaleString()}</p>-->
+<!--    <button class="btn btn-outline btn-muted" style="margin-top: 1rem;" onclick="removeTrackedCompany('${company.id}')">Stop Tracking</button>-->
+<!--</div>-->
+<!--`;-->
+<!--}).join('');-->
+
+<!--trackListEl.innerHTML = html;-->
+<!--}-->
+
+<!--function removeTrackedCompany(companyId) {-->
+<!--trackedCompanies = trackedCompanies.filter(company => company.id != companyId);-->
+<!--renderTrackedCompanies();-->
+<!--}-->
+
+
+<!--// &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; Custom Cursor and Parallax Effect &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
+<!--const customCursor = document.querySelector(".custom-cursor");-->
+<!--const heroSection = document.getElementById("hero");-->
+<!--const heroH1 = document.getElementById("hero-h1");-->
+<!--const heroP = document.getElementById("hero-p");-->
+
+<!--const mouse = { x: 0, y: 0 };-->
+<!--const prevMouse = { x: 0, y: 0 };-->
+<!--const speed = 0.15; // Lower value for slower, smoother following-->
+
+<!--let isMoving = false;-->
+<!--let timer;-->
+
+<!--window.addEventListener('mousemove', (e) => {-->
+<!--mouse.x = e.clientX;-->
+<!--mouse.y = e.clientY;-->
+<!--customCursor.style.opacity = 1;-->
+<!--isMoving = true;-->
+<!--clearTimeout(timer);-->
+<!--timer = setTimeout(() => {-->
+<!--isMoving = false;-->
+<!--// Optionally hide cursor after a short delay of no movement-->
+<!--}, 200);-->
+
+<!--if (heroSection) {-->
+<!--applyParallax(e);-->
+<!--}-->
+<!--});-->
+
+<!--function updateCursorPosition() {-->
+<!--prevMouse.x += (mouse.x - prevMouse.x) * speed;-->
+<!--prevMouse.y += (mouse.y - prevMouse.y) * speed;-->
+
+<!--const translateX = prevMouse.x - 12;-->
+<!--const translateY = prevMouse.y - 12;-->
+
+<!--customCursor.style.transform = translate(${translateX}px, ${translateY}px);-->
+
+<!--requestAnimationFrame(updateCursorPosition);-->
+<!--}-->
+
+<!--updateCursorPosition();-->
+
+<!--function applyParallax(e) {-->
+<!--const rect = heroSection.getBoundingClientRect();-->
+<!--const centerX = rect.left + rect.width / 2;-->
+<!--const centerY = rect.top + rect.height / 2;-->
+
+<!--const offsetX = (e.clientX - centerX) / (rect.width / 2);-->
+<!--const offsetY = (e.clientY - centerY) / (rect.height / 2);-->
+
+<!--const h1X = -offsetX * 10;-->
+<!--const h1Y = -offsetY * 10;-->
+<!--const pX = -offsetX * 5;-->
+<!--const pY = -offsetY * 5;-->
+
+<!--heroH1.style.transform = translate3d(${h1X}px, ${h1Y}px, 0);-->
+<!--heroP.style.transform = translate3d(${pX}px, ${pY}px, 0);-->
+<!--}-->
+<!--</script>-->
+<!--</body>-->
+<!--</html>-->
