@@ -15,7 +15,8 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-
+  security:
+    debug: true
 jwt:
   secret: "my-very-long-32-plus-character-secret-key-here-and-it-is-gonna-work"
   access-expiration-ms: 900000        # 15 minutes
