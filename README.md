@@ -1,6 +1,7 @@
-# CAT_Quest 
+# CAT_Quest
 
 CAT (Career Assist Tool) Quest is a backend system that integrates job aggregation and a job application portal into a single platform, designed to streamline and simplify the job search process.
+
 ---
 
 ## Key Features (Implemented)
