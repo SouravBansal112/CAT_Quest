@@ -1,48 +1,63 @@
-#CAT_Quest
+# CAT_Quest 
 
-CAT stands for Career Assist Tool.
-CAT_Quest is a web application designed to aggregate job listings from multiple sources — such as Naukri.com, Internshala, LinkedIn, and Indeed — into a single platform. The goal is to save users time and provide a convenient way to explore career opportunities without switching between multiple websites.
+CAT (Career Assist Tool) Quest is a backend system that integrates job aggregation and a job application portal into a single platform, designed to streamline and simplify the job search process.
+---
 
---->Features (Planned)
+## Key Features (Implemented)
 
-Scrapes job listings from multiple popular platforms.
+* JWT-based authentication (access + refresh tokens)
+* Role-based authorization (User / Recruiter)
+* Core job and application business logic (service layer)
+* Global exception handling with consistent error responses
+* Layered architecture (Controller → Service → Repository)
 
-Stores job data in a structured database for easy access.
+---
 
-Provides a unified interface to search and filter jobs.
+## Current Status
 
-Supports future enhancements like alerts, application tracking, and analytics.
+* Core backend logic (service + repository layers) is implemented
+* API layer is **partially complete** and currently being developed
+* End-to-end API testing is **not yet done**
+* Some modules are still being refined for consistency
 
---->Current Status
+---
 
-Backend and database setup are complete.
+## Planned Features (Not Yet Implemented)
 
-Currently, a data generator is used to simulate job listings for testing purposes.
+* Complete REST API coverage for all modules
+* Job scraping from external platforms
+* Automation workflows for job applications
+* Frontend (UI for users and recruiters)
 
-Core functionalities such as scraping, search, and filtering are planned for upcoming iterations.
+---
 
---->Getting Started
+## Tech Stack
 
-These instructions will help you set up the project locally for development and testing purposes.
+Java 21 • Spring Boot • Spring Security • JWT • PostgreSQL • JPA/Hibernate
 
---->Prerequisites
+---
 
-Python / java
+## Running Locally
 
-PostgreSQL
+```bash
+git clone https://github.com/SouravBansal112/CAT_Quest.git
+cd CAT_Quest
+mvn spring-boot:run
+```
 
-Git
+Configure database in `application.yaml`.
 
---->Contributing
+---
 
-Contributions are welcome! Feel free to submit issues, fork the repository, and make pull requests. Please follow these guidelines:
+## Notes
 
-Use clear and descriptive commit messages.
+This project is currently focused on building a strong backend foundation.
+API completion, testing, and external integrations are in progress.
 
-Ensure code follows existing style conventions.
+---
 
-Document any new features or changes in the README.
+## Contact
 
---->Contact
+Sourav Bansal
+[souravbansal112@gmail.com](mailto:souravbansal112@gmail.com)
 
-For questions or suggestions, reach out at souravbansal112@gmail.com or open an issue in this repository.
